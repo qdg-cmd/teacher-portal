@@ -40,44 +40,9 @@
     "description": "학교생활기록부 행동특성 및 종합의견, 세특 기재 작성을 지원합니다.",
     "badge": "생기부"
   },
+ 
   {
     "id": "app-03",
-    "title": "학생부 항목 점검기",
-    "url": "https://qdg-cmd.github.io/Hakssasngboo-check/",
-    "icon": "🔍",
-    "category": "업무/행정",
-    "description": "생활기록부 필수 기재 사항, 누락 항목 및 맞춤법을 꼼꼼하게 점검합니다.",
-    "badge": "생기부 검토"
-  },
-  {
-    "id": "app-04",
-    "title": "학급 발표자 & 번호 뽑기",
-    "url": "https://qdg-cmd.github.io/classcall/",
-    "icon": "📢",
-    "category": "수업 도구",
-    "description": "수업 중 공정하게 학생을 호출하고 발표 모둠을 무작위로 추첨합니다.",
-    "badge": "수업 필수"
-  },
-  {
-    "id": "app-05",
-    "title": "AI 수학 테스트 & 진단",
-    "url": "https://qdg-cmd.github.io/AImath-test/",
-    "icon": "📐",
-    "category": "수업 도구",
-    "description": "수학 평가 문항 테스트 및 단원별 학생 성취도를 실시간 진단합니다.",
-    "badge": "수업 도구"
-  },
-  {
-    "id": "app-06",
-    "title": "AI 교무 업무 도우미",
-    "url": "https://qdg-cmd.github.io/aioffice/",
-    "icon": "💼",
-    "category": "업무/행정",
-    "description": "교무 행정 문서 및 학교 공문 작성을 도와주는 AI 지원 도구입니다.",
-    "badge": "교무 행정"
-  },
-  {
-    "id": "app-07",
     "title": "학사일정 & 시간표 도우미",
     "url": "https://qdg-cmd.github.io/schedule_help/",
     "icon": "📅",
@@ -86,7 +51,7 @@
     "badge": "일정 관리"
   },
   {
-    "id": "app-08",
+    "id": "app-04",
     "title": "대입 수시 지원 전략 도우미",
     "url": "https://qdg-cmd.github.io/uni-apply-new/",
     "icon": "🎓",
@@ -95,16 +60,7 @@
     "badge": "진학 상담"
   },
   {
-    "id": "app-09",
-    "title": "대학 입시 상담 지원",
-    "url": "https://qdg-cmd.github.io/university-apply/",
-    "icon": "🏛️",
-    "category": "학생 관리",
-    "description": "학생 맞춤형 대학 전형 분석 및 1:1 진학 지도 데이터를 관리합니다.",
-    "badge": "진학 지도"
-  },
-  {
-    "id": "app-10",
+    "id": "app-5",
     "title": "면접 인사이트 & 예상 질문",
     "url": "https://qdg-cmd.github.io/myeonheop-insite/",
     "icon": "🎤",
@@ -113,7 +69,7 @@
     "badge": "면접 대비"
   },
   {
-    "id": "app-11",
+    "id": "app-6",
     "title": "선택과목 분반 도우미",
     "url": "https://qdg-cmd.github.io/select-class/",
     "icon": "🗂️",
@@ -122,7 +78,7 @@
     "badge": "학급 편성"
   },
   {
-    "id": "app-12",
+    "id": "app-7",
     "title": "PDF 개인정보 마스킹 도구",
     "url": "https://qdg-cmd.github.io/pdf-masking/",
     "icon": "🛡️",
@@ -131,35 +87,8 @@
     "badge": "개인정보보호"
   },
   {
-    "id": "app-13",
-    "title": "수업용 방탈출 게임 (Omni)",
-    "url": "https://qdg-cmd.github.io/Omni-escape/",
-    "icon": "🗝️",
-    "category": "수업 도구",
-    "description": "학생들의 흥미와 집중도를 극대화하는 퀴즈형 수업 방탈출 게임입니다.",
-    "badge": "활동 수업"
-  },
-  {
-    "id": "app-14",
-    "title": "주제 탐구 & 보고서 도우미",
-    "url": "https://qdg-cmd.github.io/topic-help/",
-    "icon": "💡",
-    "category": "수업 도구",
-    "description": "교과 심화 탐구 및 자율활동 보고서 주제 설정을 도와줍니다.",
-    "badge": "탐구 활동"
-  },
-  {
-    "id": "app-15",
-    "title": "학생 상담 대화 도우미",
-    "url": "https://qdg-cmd.github.io/talking-help2/",
-    "icon": "🤝",
-    "category": "학생 관리",
-    "description": "학부모 상담 및 학생 1:1 진로/고민 상담 일지를 체계적으로 누적합니다.",
-    "badge": "상담 기록"
-  },
-  {
-    "id": "app-16",
-    "title": "나침반 진로 활동 기록판",
+    "id": "app-8",
+    "title": "생기부 나침반",
     "url": "https://qdg-cmd.github.io/compass-record/",
     "icon": "🧭",
     "category": "학생 관리",
@@ -167,21 +96,12 @@
     "badge": "진로 지도"
   },
   {
-    "id": "app-17",
-    "title": "교무용 간이 계산기",
-    "url": "https://qdg-cmd.github.io/calculator/",
-    "icon": "🧮",
-    "category": "기타 도구",
-    "description": "점수 환산 및 간단한 수치 계산을 빠르게 처리하는 유틸리티입니다.",
-    "badge": "유틸리티"
-  },
-  {
-    "id": "app-18",
-    "title": "HTML 문서 결합기",
+    "id": "app-9",
+    "title": "HTML 문서 뷰어",
     "url": "https://qdg-cmd.github.io/comb-html/",
     "icon": "📑",
     "category": "기타 도구",
-    "description": "여러 개의 웹 문서 조각을 하나의 파일로 깔끔하게 합쳐줍니다.",
+    "description": "여러 개의 웹 문서를 모바일 환경에서도 보여줍니다.",
     "badge": "유틸리티"
   }
 ]
