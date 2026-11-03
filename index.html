@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>선생님의 교무실 포털 📚</title>
+  
+  <!-- PWA & 메타 설정 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#254d32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="선생님을 위한 교무 도구 및 수업 웹 앱 모음 런처">
+
+  <!-- 폰트: 한글 고딕 (Pretendard & Gaegu 칠판 손글씨풍) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --board-green: #234b31;
+      --board-green-dark: #193824;
+      --wood-rim: #8d562f;
+      --wood-rim-dark: #5e371b;
+      --chalk-white: #f5f7f4;
+      --chalk-yellow: #fded72;
+      --chalk-blue: #9ae2eb;
+      
+      --desk-bg: #f4eee2;
+      --card-bg: #ffffff;
+      --paper-yellow: #fffde7;
+      --text-dark: #2c2926;
+      --text-muted: #6b635b;
+      --border-color: #e4d8c7;
+      --tag-bg: #ece2d2;
+      
+      --shadow-sm: 0 2px 6px rgba(60, 40, 20, 0.08);
+      --shadow-md: 0 6px 16px rgba(60, 40, 20, 0.12);
+      --shadow-card: 0 4px 14px rgba(90, 60, 30, 0.1);
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--desk-bg);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(#dfd4c0 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    /* 🏫 칠판 헤더 (Chalkboard) */
+    .chalkboard-header {
+      background: var(--board-green);
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      color: var(--chalk-white);
+      border-bottom: 9px solid var(--wood-rim);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      position: relative;
+    }
+
+    .chalkboard-header::after {
+      content: '';
+      position: absolute;
+      bottom: -13px;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--wood-rim-dark);
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 20px;
+    }
+
+    .top-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+
+    .top-meta-spacer {
+      width: 85px;
+    }
+
+    .btn-install-app {
+      background: rgba(253, 237, 114, 0.15);
+      color: var(--chalk-yellow);
+      border: 1px dashed rgba(253, 237, 114, 0.5);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-install-app:hover {
+      background: var(--chalk-yellow);
+      color: var(--board-green-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .date-clock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px dashed rgba(255, 255, 255, 0.25);
+      font-family: 'Gaegu', cursive;
+      font-size: 1.15rem;
+      letter-spacing: 0.5px;
+      color: var(--chalk-yellow);
+    }
+
+    .board-title-group {
+      text-align: center;
+      margin: 6px 0 14px;
+    }
+
+    .board-title {
+      font-family: 'Gaegu', cursive;
+      font-size: 2.5rem;
+      color: var(--chalk-white);
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .board-subtitle {
+      font-family: 'Nanum Pen Script', cursive;
+      font-size: 1.4rem;
+      color: var(--chalk-yellow);
+      margin-top: 4px;
+      opacity: 0.95;
+    }
+
+    /* 🔍 교무실 책상 툴바 (검색 & 카테고리 필터) */
+    .desk-toolbar {
+      max-width: 1200px;
+      margin: 22px auto 0;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    .search-action-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .search-box-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.15rem;
+      color: var(--text-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 14px 20px 14px 48px;
+      border-radius: 30px;
+      border: 2px solid var(--border-color);
+      background: #fff;
+      font-size: 1rem;
+      color: var(--text-dark);
+      box-shadow: var(--shadow-sm);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--board-green);
+      box-shadow: 0 0 0 4px rgba(35, 75, 49, 0.12);
+    }
+
+    /* 카테고리 알약 탭 */
+    .category-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+    }
+    .category-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-pill {
+      background: #fff;
+      border: 1.5px solid var(--border-color);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .cat-pill:hover {
+      border-color: var(--wood-rim);
+      color: var(--text-dark);
+    }
+
+    .cat-pill.active {
+      background: var(--board-green);
+      color: #fff;
+      border-color: var(--board-green);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* 📋 교무실 서랍/카드 그리드 */
+    .portal-main {
+      max-width: 1200px;
+      margin: 18px auto 40px;
+      padding: 0 20px;
+      width: 100%;
+      flex: 1;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 22px;
+    }
+
+    /* 🪑 클릭 가능한 앱 카드 (레이아웃 박스) */
+    .app-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-color);
+      box-shadow: var(--shadow-card);
+      padding: 22px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .app-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 26px rgba(70, 45, 20, 0.15);
+      border-color: var(--board-green);
+      background: #fffffe;
+    }
+
+    .app-card:active {
+      transform: translateY(-1px);
+    }
+
+    /* 핀(고정) 테이프 */
+    .card-pin-tape {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 52px;
+      height: 14px;
+      background: rgba(255, 240, 160, 0.85);
+      border-bottom: 1px dashed rgba(0,0,0,0.1);
+      border-radius: 0 0 2px 2px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      margin-top: 2px;
+    }
+
+    .card-icon-frame {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: var(--paper-yellow);
+      border: 1.5px solid #ebd9a5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.04);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .app-card:hover .card-icon-frame {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .card-actions-top {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    /* ⭐ 즐겨찾기 고정 버튼 */
+    .btn-pin {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      opacity: 0.3;
+      transition: opacity 0.2s, transform 0.2s;
+      padding: 4px;
+      border-radius: 50%;
+    }
+    .btn-pin:hover {
+      opacity: 0.85;
+      transform: scale(1.2);
+    }
+    .btn-pin.pinned {
+      opacity: 1;
+      transform: scale(1.15);
+      color: #f59e0b;
+      text-shadow: 0 1px 3px rgba(245, 158, 11, 0.4);
+    }
+
+    .badge-pill {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--tag-bg);
+      color: var(--text-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .card-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+      line-height: 1.35;
+      word-break: keep-all;
+    }
+
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+      flex: 1;
+      word-break: keep-all;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border-color);
+      gap: 8px;
+    }
+
+    .card-category-tag {
+      font-size: 0.8rem;
+      color: var(--board-green);
+      font-weight: 600;
+      background: rgba(35, 75, 49, 0.08);
+      padding: 4px 9px;
+      border-radius: 6px;
+    }
+
+    .launch-hint {
+      font-size: 0.82rem;
+      color: var(--board-green);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      opacity: 0.8;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+
+    .app-card:hover .launch-hint {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+
+    /* 텅 빈 상태 (Empty State) */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      background: #fff;
+      border-radius: var(--radius-md);
+      border: 2px dashed var(--border-color);
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .empty-state-text {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* 토스트 알림 (Toast) */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #234b31;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast-popup.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* 풋터 */
+    .portal-footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: auto;
+    }
+
+    /* 모바일 반응형 */
+    @media (max-width: 640px) {
+      .board-title {
+        font-size: 1.9rem;
+      }
+      .board-subtitle {
+        font-size: 1.15rem;
+      }
+      .top-meta-spacer {
+        display: none;
+      }
+      .date-clock-badge {
+        font-size: 0.88rem;
+        padding: 5px 10px;
+      }
+      .btn-install-app {
+        padding: 5px 9px;
+        font-size: 0.76rem;
+      }
+      .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🏫 칠판 스타일 헤더 -->
+  <header class="chalkboard-header">
+    <div class="header-container">
+      <div class="top-meta">
+        <div class="top-meta-spacer"></div>
+        <div class="date-clock-badge" id="liveDateClock">
+          🗓️ 2026. 11. 3. (화) ⏰ 00:00:00
+        </div>
+        <button class="btn-install-app" id="btnInstallApp" title="스마트폰 홈 화면이나 PC에 앱으로 설치">
+          <span>📲</span> 앱 설치
+        </button>
+      </div>
+
+      <div class="board-title-group">
+        <h1 class="board-title">🏫 선생님의 교무실 포털</h1>
+        <p class="board-subtitle">"오늘도 우리 반 아이들과 함께 행복한 수업 되세요!" ☕</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🔍 툴바 (검색창 & 카테고리 필터) -->
+  <section class="desk-toolbar">
+    <div class="search-action-row">
+      <div class="search-box-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="수업 도구, 웹 앱 이름, 설명 검색...">
+      </div>
+    </div>
+
+    <!-- 카테고리 필터 탭 -->
+    <div class="category-pills" id="categoryPills">
+      <button class="cat-pill active" data-category="ALL">📌 전체 보기</button>
+      <button class="cat-pill" data-category="수업 도구">🪑 수업 도구</button>
+      <button class="cat-pill" data-category="학생 관리">⭐ 학생 관리</button>
+      <button class="cat-pill" data-category="업무/행정">📁 업무/행정</button>
+      <button class="cat-pill" data-category="기타 도구">💡 기타 도구</button>
+    </div>
+  </section>
+
+  <!-- 📋 교무실 앱 카드 그리드 -->
+  <main class="portal-main">
+    <div class="cards-grid" id="cardsGrid">
+      <!-- 자바스크립트로 앱 카드가 동적으로 렌더링됩니다 -->
+    </div>
+  </main>
+
+  <!-- 풋터 -->
+  <footer class="portal-footer">
+    <p>🏫 선생님의 교무실 웹 런처 | GitHub Pages & PWA 지원</p>
+  </footer>
+
+  <!-- 토스트 팝업 메시지 -->
+  <div class="toast-popup" id="toastBox">
+    <span>✅</span> <span id="toastMsg">알림 메시지</span>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 기본 상태 및 데이터 관리
+    // ==========================================
+    let appsData = [];
+    let pinnedApps = JSON.parse(localStorage.getItem('teacher_portal_pins') || '[]');
+    let currentCategory = 'ALL';
+    let searchQuery = '';
+
+    // 백업용 기본 데이터
+    const DEFAULT_APPS = [
+      {
+        "id": "app-01",
+        "title": "랜덤 자리 배치 & 모둠 편성",
+        "url": "https://example.com/seat-picker",
+        "icon": "🪑",
+        "category": "수업 도구",
+        "description": "클릭 한 번으로 학생 자리와 발표 모둠을 공정하게 자동 배치하는 웹 앱입니다.",
+        "badge": "자주 씀"
+      },
+      {
+        "id": "app-02",
+        "title": "수업용 스톱워치 & 발표자 뽑기",
+        "url": "https://example.com/class-timer",
+        "icon": "⏱️",
+        "category": "수업 도구",
+        "description": "모둠 활동 시간 제한 카운트다운 타이머와 번호 뽑기 룰렛 기능입니다.",
+        "badge": "수업 필수"
+      },
+      {
+        "id": "app-03",
+        "title": "학급 칭찬 도장 & 마일리지 관리판",
+        "url": "https://example.com/student-points",
+        "icon": "⭐",
+        "category": "학생 관리",
+        "description": "우리 반 학생들의 칭찬 스티커와 활동 마일리지를 기록하는 대시보드입니다.",
+        "badge": "학급 경영"
+      },
+      {
+        "id": "app-04",
+        "title": "오늘의 급식표 & 학사일정 뷰어",
+        "url": "https://example.com/school-meals",
+        "icon": "🍱",
+        "category": "업무/행정",
+        "description": "NEIS 나이스 연동 오늘의 급식 메뉴와 칼로리, 이번 달 학사 일정을 조회합니다.",
+        "badge": "정보 조회"
+      },
+      {
+        "id": "app-05",
+        "title": "서술형 평가 채점 루브릭 메모기",
+        "url": "https://example.com/scoring-rubric",
+        "icon": "📝",
+        "category": "업무/행정",
+        "description": "수행평가 채점 기준표를 확인하며 빠르게 피드백 코멘트를 복사할 수 있는 도구입니다.",
+        "badge": "성적 처리"
+      },
+      {
+        "id": "app-06",
+        "title": "생기부 바이트(Byte) 수 계산기",
+        "url": "https://example.com/byte-counter",
+        "icon": "📏",
+        "category": "기타 도구",
+        "description": "나이스(NEIS) 기준 한글 3바이트/영문 1바이트 및 줄바꿈을 계산해 주는 글자 수 세기 도구입니다.",
+        "badge": "유틸리티"
+      }
+    ];
+
+    // ==========================================
+    // 2. 초기 로딩 및 데이터 페치 (# 주석 안전 제거 지원)
+    // ==========================================
+    async function initPortal() {
+      setupRealtimeClock();
+
+      try {
+        const res = await fetch('./apps.json?t=' + Date.now());
+        if (!res.ok) throw new Error('apps.json fetch failed');
+        const rawText = await res.text();
+        
+        // # 기호 및 // 기호로 시작하는 주석 라인을 안전하게 걸러내어 JSON 파싱
+        const cleanedText = rawText
+          .split('\n')
+          .filter(line => {
+            const trimmed = line.trim();
+            return !trimmed.startsWith('#') && !trimmed.startsWith('//');
+          })
+          .join('\n');
+
+        appsData = JSON.parse(cleanedText);
+      } catch (e) {
+        console.warn('apps.json을 불러오지 못해 기본 템플릿 데이터를 사용합니다.', e);
+        appsData = [...DEFAULT_APPS];
+      }
+
+      renderCards();
+      setupEventListeners();
+      setupInstallPrompt();
+      registerServiceWorker();
+    }
+
+    // ==========================================
+    // 3. 카드 렌더링 함수 (박스 전체 클릭 시 실행)
+    // ==========================================
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+
+      // 필터링: 검색어 및 카테고리
+      let filtered = appsData.filter(app => {
+        const matchCat = currentCategory === 'ALL' || app.category === currentCategory;
+        const q = searchQuery.toLowerCase().trim();
+        const matchQuery = !q || 
+          app.title.toLowerCase().includes(q) || 
+          (app.description && app.description.toLowerCase().includes(q)) ||
+          (app.category && app.category.toLowerCase().includes(q));
+        return matchCat && matchQuery;
+      });
+
+      // 정렬: 즐겨찾기(Pin)한 항목이 가장 먼저 오도록
+      filtered.sort((a, b) => {
+        const isPinnedA = pinnedApps.includes(a.id) ? 1 : 0;
+        const isPinnedB = pinnedApps.includes(b.id) ? 1 : 0;
+        return isPinnedB - isPinnedA;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p class="empty-state-text">조건에 맞는 교무 도구가 없습니다.</p>
+            <p style="margin-top: 8px; color: #888; font-size: 0.88rem;">apps.json에 새로운 웹 앱을 추가해 보세요!</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(app => {
+        const isPinned = pinnedApps.includes(app.id);
+        const card = document.createElement('article');
+        card.className = 'app-card';
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('title', `${app.title} 실행하기`);
+
+        // 레이아웃 박스 전체 클릭 시 새 탭으로 실행
+        card.addEventListener('click', () => {
+          if (app.url) {
+            window.open(app.url, '_blank', 'noopener,noreferrer');
+          }
+        });
+
+        // 엔터 키 접근성 지원
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            window.open(app.url, '_blank', 'noopener,noreferrer');
+          }
+        });
+
+        card.innerHTML = `
+          <div class="card-pin-tape"></div>
+          <div class="card-top">
+            <div class="card-icon-frame">${escapeHtml(app.icon || '📌')}</div>
+            <div class="card-actions-top">
+              ${app.badge ? `<span class="badge-pill">${escapeHtml(app.badge)}</span>` : ''}
+              <button class="btn-pin ${isPinned ? 'pinned' : ''}" 
+                      onclick="togglePin(event, '${app.id}')" 
+                      title="${isPinned ? '즐겨찾기 해제' : '상단 고정'}">
+                ${isPinned ? '⭐' : '☆'}
+              </button>
+            </div>
+          </div>
+          <h2 class="card-title">${escapeHtml(app.title)}</h2>
+          <p class="card-desc">${escapeHtml(app.description || '')}</p>
+          <div class="card-footer">
+            <span class="card-category-tag">${escapeHtml(app.category || '기타')}</span>
+            <span class="launch-hint">실행 ↗</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // ==========================================
+    // 4. 즐겨찾기(Pin) 토글 (클릭 이벤트 전파 방지)
+    // ==========================================
+    function togglePin(event, appId) {
+      // 별표 클릭 시 카드 전체 클릭(새 탭 실행)이 발동하지 않도록 방지
+      event.stopPropagation();
+
+      if (pinnedApps.includes(appId)) {
+        pinnedApps = pinnedApps.filter(id => id !== appId);
+        showToast('📌 상단 고정이 해제되었습니다.');
+      } else {
+        pinnedApps.push(appId);
+        showToast('⭐ 상단에 고정되었습니다!');
+      }
+      localStorage.setItem('teacher_portal_pins', JSON.stringify(pinnedApps));
+      renderCards();
+    }
+
+    // ==========================================
+    // 5. 실시간 시계 & 날짜 설정
+    // ==========================================
+    function setupRealtimeClock() {
+      const clockEl = document.getElementById('liveDateClock');
+      function update() {
+        const now = new Date();
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+        const date = now.getDate();
+        const day = days[now.getDay()];
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        clockEl.innerText = `🗓️ ${year}. ${month}. ${date}. (${day}) ⏰ ${h}:${m}:${s}`;
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    // ==========================================
+    // 6. 이벤트 리스너 연결
+    // ==========================================
+    function setupEventListeners() {
+      // 실시간 검색창
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderCards();
+      });
+
+      // 카테고리 필터 탭
+      document.querySelectorAll('#categoryPills .cat-pill').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('#categoryPills .cat-pill').forEach(b => b.classList.remove('active'));
+          e.target.classList.add('active');
+          currentCategory = e.target.getAttribute('data-category');
+          renderCards();
+        });
+      });
+    }
+
+    // ==========================================
+    // 7. 유틸리티 함수 (토스트, XSS 방지, PWA)
+    // ==========================================
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    let deferredPrompt = null;
+    function setupInstallPrompt() {
+      const btn = document.getElementById('btnInstallApp');
+
+      // 브라우저가 PWA 설치 준비를 마치면 이벤트 캡처
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        btn.classList.add('ready');
+      });
+
+      btn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          // 브라우저의 실제 OS 앱 설치 팝업을 즉시 실행!
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            showToast('🎉 앱이 성공적으로 설치되었습니다!');
+          }
+          deferredPrompt = null;
+        } else {
+          const isFileProtocol = window.location.protocol === 'file:';
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+          if (isFileProtocol) {
+            alert(
+              '📢 [실제 앱 설치 안내]\n\n' +
+              '현재 컴퓨터 탐색기 파일(file://)로 열려 있어, 브라우저 보안 정책상 시스템 설치 창이 차단됩니다.\n\n' +
+              '깃허브(HTTPS)에 올리시면 이 버튼을 누르자마자 [실제 앱 설치 확인창]이 즉시 실행됩니다!\n\n' +
+              '💡 지금 PC에서 바로 앱으로 만드시려면:\n브라우저 우측 상단 메뉴(···) → [앱] 또는 [저장 및 공유] → [이 사이트를 앱으로 설치]를 누르시면 바탕화면에 바로 앱이 생성됩니다.'
+            );
+          } else if (isIOS) {
+            showToast('📲 아이폰: 브라우저 하단 [공유] → [홈 화면에 추가]를 눌러주세요!');
+          } else {
+            showToast('💡 브라우저 주소창 우측 [앱 설치] 아이콘을 클릭하시면 즉시 설치됩니다!');
+          }
+        }
+      });
+
+      window.addEventListener('appinstalled', () => {
+        showToast('🎉 교무실 포털 앱 설치가 완료되었습니다!');
+        deferredPrompt = null;
+      });
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('Service Worker 등록 실패 (로컬 file:// 실행 시 정상):', err);
+        });
+      }
+    }
+
+    // 페이지 시작
+    window.addEventListener('DOMContentLoaded', initPortal);
+  </script>
+</body>
+</html>
