@@ -12,11 +12,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="선생님을 위한 교무 도구 및 수업 웹 앱 모음 런처">
 
-  <!-- 폰트: 한글 고딕 (Pretendard & Gaegu 칠판 손글씨풍) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <!-- 폰트 비동기 로딩 (첫 화면 렌더링 지연 완전 제거) -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&family=Nanum+Pen+Script&display=swap" media="print" onload="this.media='all'">
 
   <style>
     :root {
@@ -48,7 +49,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard', 'Segoe UI', Roboto, 'Malgun Gothic', '맑은 고딕', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -560,83 +561,198 @@
 
   <script>
     // ==========================================
-    // 1. 기본 상태 및 데이터 관리
+    // 1. 기본 상태 및 18종 앱 즉시 내장 (0.01초 즉각 로딩)
     // ==========================================
-    let appsData = [];
     let pinnedApps = JSON.parse(localStorage.getItem('teacher_portal_pins') || '[]');
     let currentCategory = 'ALL';
     let searchQuery = '';
 
-    // 백업용 기본 데이터
-    const DEFAULT_APPS = [
+    // 실제 18종 웹 앱을 바로 내장하여 네트워크 대기 없이 0초 만에 화면 표시!
+    let appsData = [
       {
         "id": "app-01",
-        "title": "랜덤 자리 배치 & 모둠 편성",
-        "url": "https://example.com/seat-picker",
-        "icon": "🪑",
-        "category": "수업 도구",
-        "description": "클릭 한 번으로 학생 자리와 발표 모둠을 공정하게 자동 배치하는 웹 앱입니다.",
-        "badge": "자주 씀"
+        "title": "야자(야간자율학습) 출석 체크",
+        "url": "https://qdg-cmd.github.io/yaja-check/",
+        "icon": "🌙",
+        "category": "학생 관리",
+        "description": "야간자율학습 참여 학생 출결 및 잔류 인원을 빠르게 확인·체크합니다.",
+        "badge": "학습 관리"
       },
       {
         "id": "app-02",
-        "title": "수업용 스톱워치 & 발표자 뽑기",
-        "url": "https://example.com/class-timer",
-        "icon": "⏱️",
-        "category": "수업 도구",
-        "description": "모둠 활동 시간 제한 카운트다운 타이머와 번호 뽑기 룰렛 기능입니다.",
-        "badge": "수업 필수"
+        "title": "학생부 기재 도우미",
+        "url": "https://qdg-cmd.github.io/haksangboo_help/",
+        "icon": "📋",
+        "category": "업무/행정",
+        "description": "학교생활기록부 행동특성 및 종합의견, 세특 기재 작성을 지원합니다.",
+        "badge": "생기부"
       },
       {
         "id": "app-03",
-        "title": "학급 칭찬 도장 & 마일리지 관리판",
-        "url": "https://example.com/student-points",
-        "icon": "⭐",
-        "category": "학생 관리",
-        "description": "우리 반 학생들의 칭찬 스티커와 활동 마일리지를 기록하는 대시보드입니다.",
-        "badge": "학급 경영"
+        "title": "학생부 항목 점검기",
+        "url": "https://qdg-cmd.github.io/Hakssasngboo-check/",
+        "icon": "🔍",
+        "category": "업무/행정",
+        "description": "생활기록부 필수 기재 사항, 누락 항목 및 맞춤법을 꼼꼼하게 점검합니다.",
+        "badge": "생기부 검토"
       },
       {
         "id": "app-04",
-        "title": "오늘의 급식표 & 학사일정 뷰어",
-        "url": "https://example.com/school-meals",
-        "icon": "🍱",
-        "category": "업무/행정",
-        "description": "NEIS 나이스 연동 오늘의 급식 메뉴와 칼로리, 이번 달 학사 일정을 조회합니다.",
-        "badge": "정보 조회"
+        "title": "학급 발표자 & 번호 뽑기",
+        "url": "https://qdg-cmd.github.io/classcall/",
+        "icon": "📢",
+        "category": "수업 도구",
+        "description": "수업 중 공정하게 학생을 호출하고 발표 모둠을 무작위로 추첨합니다.",
+        "badge": "수업 필수"
       },
       {
         "id": "app-05",
-        "title": "서술형 평가 채점 루브릭 메모기",
-        "url": "https://example.com/scoring-rubric",
-        "icon": "📝",
-        "category": "업무/행정",
-        "description": "수행평가 채점 기준표를 확인하며 빠르게 피드백 코멘트를 복사할 수 있는 도구입니다.",
-        "badge": "성적 처리"
+        "title": "AI 수학 테스트 & 진단",
+        "url": "https://qdg-cmd.github.io/AImath-test/",
+        "icon": "📐",
+        "category": "수업 도구",
+        "description": "수학 평가 문항 테스트 및 단원별 학생 성취도를 실시간 진단합니다.",
+        "badge": "수업 도구"
       },
       {
         "id": "app-06",
-        "title": "생기부 바이트(Byte) 수 계산기",
-        "url": "https://example.com/byte-counter",
-        "icon": "📏",
+        "title": "AI 교무 업무 도우미",
+        "url": "https://qdg-cmd.github.io/aioffice/",
+        "icon": "💼",
+        "category": "업무/행정",
+        "description": "교무 행정 문서 및 학교 공문 작성을 도와주는 AI 지원 도구입니다.",
+        "badge": "교무 행정"
+      },
+      {
+        "id": "app-07",
+        "title": "학사일정 & 시간표 도우미",
+        "url": "https://qdg-cmd.github.io/schedule_help/",
+        "icon": "📅",
+        "category": "업무/행정",
+        "description": "우리 학교 학사 일정과 주간 학급 시간표를 한눈에 조회합니다.",
+        "badge": "일정 관리"
+      },
+      {
+        "id": "app-08",
+        "title": "대입 수시 지원 전략 도우미",
+        "url": "https://qdg-cmd.github.io/uni-apply-new/",
+        "icon": "🎓",
+        "category": "학생 관리",
+        "description": "대학 수시 6회 지원 조합과 최적의 입시 전략 수립을 돕습니다.",
+        "badge": "진학 상담"
+      },
+      {
+        "id": "app-09",
+        "title": "대학 입시 상담 지원",
+        "url": "https://qdg-cmd.github.io/university-apply/",
+        "icon": "🏛️",
+        "category": "학생 관리",
+        "description": "학생 맞춤형 대학 전형 분석 및 1:1 진학 지도 데이터를 관리합니다.",
+        "badge": "진학 지도"
+      },
+      {
+        "id": "app-10",
+        "title": "면접 인사이트 & 예상 질문",
+        "url": "https://qdg-cmd.github.io/myeonheop-insite/",
+        "icon": "🎤",
+        "category": "학생 관리",
+        "description": "대입 학생부종합 및 모의 면접 대비 핵심 예상 질문과 피드백을 제공합니다.",
+        "badge": "면접 대비"
+      },
+      {
+        "id": "app-11",
+        "title": "선택과목 분반 도우미",
+        "url": "https://qdg-cmd.github.io/select-class/",
+        "icon": "🗂️",
+        "category": "학생 관리",
+        "description": "고교학점제 학생별 선택과목 수요 조사 및 이동 수업 분반을 편성합니다.",
+        "badge": "학급 편성"
+      },
+      {
+        "id": "app-12",
+        "title": "PDF 개인정보 마스킹 도구",
+        "url": "https://qdg-cmd.github.io/pdf-masking/",
+        "icon": "🛡️",
+        "category": "업무/행정",
+        "description": "학생 개인정보(주민번호, 이름 등)를 PDF 파일에서 안전하게 블라인드 처리합니다.",
+        "badge": "개인정보보호"
+      },
+      {
+        "id": "app-13",
+        "title": "수업용 방탈출 게임 (Omni)",
+        "url": "https://qdg-cmd.github.io/Omni-escape/",
+        "icon": "🗝️",
+        "category": "수업 도구",
+        "description": "학생들의 흥미와 집중도를 극대화하는 퀴즈형 수업 방탈출 게임입니다.",
+        "badge": "활동 수업"
+      },
+      {
+        "id": "app-14",
+        "title": "주제 탐구 & 보고서 도우미",
+        "url": "https://qdg-cmd.github.io/topic-help/",
+        "icon": "💡",
+        "category": "수업 도구",
+        "description": "교과 심화 탐구 및 자율활동 보고서 주제 설정을 도와줍니다.",
+        "badge": "탐구 활동"
+      },
+      {
+        "id": "app-15",
+        "title": "학생 상담 대화 도우미",
+        "url": "https://qdg-cmd.github.io/talking-help2/",
+        "icon": "🤝",
+        "category": "학생 관리",
+        "description": "학부모 상담 및 학생 1:1 진로/고민 상담 일지를 체계적으로 누적합니다.",
+        "badge": "상담 기록"
+      },
+      {
+        "id": "app-16",
+        "title": "나침반 진로 활동 기록판",
+        "url": "https://qdg-cmd.github.io/compass-record/",
+        "icon": "🧭",
+        "category": "학생 관리",
+        "description": "학생의 성장 기록과 진로 포트폴리오를 지속적으로 관리합니다.",
+        "badge": "진로 지도"
+      },
+      {
+        "id": "app-17",
+        "title": "교무용 간이 계산기",
+        "url": "https://qdg-cmd.github.io/calculator/",
+        "icon": "🧮",
         "category": "기타 도구",
-        "description": "나이스(NEIS) 기준 한글 3바이트/영문 1바이트 및 줄바꿈을 계산해 주는 글자 수 세기 도구입니다.",
+        "description": "점수 환산 및 간단한 수치 계산을 빠르게 처리하는 유틸리티입니다.",
+        "badge": "유틸리티"
+      },
+      {
+        "id": "app-18",
+        "title": "HTML 문서 결합기",
+        "url": "https://qdg-cmd.github.io/comb-html/",
+        "icon": "📑",
+        "category": "기타 도구",
+        "description": "여러 개의 웹 문서 조각을 하나의 파일로 깔끔하게 합쳐줍니다.",
         "badge": "유틸리티"
       }
     ];
 
     // ==========================================
-    // 2. 초기 로딩 및 데이터 페치 (# 주석 안전 제거 지원)
+    // 2. 초고속 즉각 실행 및 백그라운드 동기화
     // ==========================================
-    async function initPortal() {
+    function initPortal() {
       setupRealtimeClock();
+      // 🚀 네트워크 지연 대기 0초: 즉각 화면 렌더링!
+      renderCards();
+      setupEventListeners();
+      setupInstallPrompt();
+      registerServiceWorker();
 
+      // 백그라운드에서 최신 apps.json 비동기 업데이트 확인
+      syncLatestAppsInBackground();
+    }
+
+    async function syncLatestAppsInBackground() {
       try {
         const res = await fetch('./apps.json?t=' + Date.now());
-        if (!res.ok) throw new Error('apps.json fetch failed');
+        if (!res.ok) return;
         const rawText = await res.text();
-        
-        // # 기호 및 // 기호로 시작하는 주석 라인을 안전하게 걸러내어 JSON 파싱
         const cleanedText = rawText
           .split('\n')
           .filter(line => {
@@ -645,16 +761,14 @@
           })
           .join('\n');
 
-        appsData = JSON.parse(cleanedText);
+        const latestData = JSON.parse(cleanedText);
+        if (JSON.stringify(latestData) !== JSON.stringify(appsData)) {
+          appsData = latestData;
+          renderCards();
+        }
       } catch (e) {
-        console.warn('apps.json을 불러오지 못해 기본 템플릿 데이터를 사용합니다.', e);
-        appsData = [...DEFAULT_APPS];
+        // 백그라운드 실패 시에도 이미 내장 데이터로 화면이 완벽 작동 중
       }
-
-      renderCards();
-      setupEventListeners();
-      setupInstallPrompt();
-      registerServiceWorker();
     }
 
     // ==========================================
@@ -872,8 +986,8 @@
       }
     }
 
-    // 페이지 시작
-    window.addEventListener('DOMContentLoaded', initPortal);
+    // 페이지 파싱 즉시 초고속 실행 (대기 시간 0초)
+    initPortal();
   </script>
 </body>
 </html>
