@@ -1,5 +1,5 @@
-// 선생님의 교무실 포털 - PWA 캐시 워커
-const CACHE_NAME = 'teacher-portal-v2';
+// 선생님의 교무실 포털 - PWA 캐시 워커 v3
+const CACHE_NAME = 'teacher-portal-v3';
 const STATIC_ASSETS = [
   './',
   './index.html',

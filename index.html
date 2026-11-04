@@ -6,11 +6,24 @@
   <title>선생님의 교무실 포털 📚</title>
   
   <!-- PWA & 메타 설정 -->
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
   <meta name="theme-color" content="#254d32">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="교무실포털">
   <meta name="description" content="선생님을 위한 교무 도구 및 수업 웹 앱 모음 런처">
+  <script>
+    // PWA 설치 이벤트를 브라우저 시작 즉시 캡처 (지연/유실 완전 방지)
+    window.deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      console.log('✅ PWA beforeinstallprompt captured!');
+    });
+  </script>
 
   <!-- 폰트 비동기 로딩 (첫 화면 렌더링 지연 완전 제거) -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -933,48 +946,83 @@
         .replace(/'/g, '&#39;');
     }
 
-    let deferredPrompt = null;
     function setupInstallPrompt() {
       const btn = document.getElementById('btnInstallApp');
 
-      // 브라우저가 PWA 설치 준비를 마치면 이벤트 캡처
+      if (window.deferredPrompt) {
+        btn.classList.add('ready');
+      }
+
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        deferredPrompt = e;
+        window.deferredPrompt = e;
         btn.classList.add('ready');
       });
 
       btn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-          // 브라우저의 실제 OS 앱 설치 팝업을 즉시 실행!
-          deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          if (outcome === 'accepted') {
+        // 1. 이미 앱 모드로 실행 중인지 확인
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        if (isStandalone) {
+          showToast('🎉 이미 바탕화면/홈 화면에 설치되어 앱으로 실행 중입니다!');
+          return;
+        }
+
+        let promptEvent = window.deferredPrompt;
+
+        // 2. 만약 첫 접속 직후 브라우저가 아직 이벤트를 준비 중이면 최대 1.5초간 대기
+        if (!promptEvent) {
+          showToast('⏳ 앱 설치 준비 중입니다. 잠시만 기다려주세요...');
+          promptEvent = await new Promise((resolve) => {
+            const timer = setTimeout(() => resolve(null), 1500);
+            window.addEventListener('beforeinstallprompt', (e) => {
+              clearTimeout(timer);
+              e.preventDefault();
+              window.deferredPrompt = e;
+              resolve(e);
+            }, { once: true });
+          });
+        }
+
+        // 3. 브라우저 설치 권한 이벤트가 준비되었으면 실제 OS 앱 설치 확인창을 즉각 호출!
+        if (promptEvent) {
+          promptEvent.prompt();
+          const choice = await promptEvent.userChoice;
+          if (choice.outcome === 'accepted') {
             showToast('🎉 앱이 성공적으로 설치되었습니다!');
           }
-          deferredPrompt = null;
-        } else {
-          const isFileProtocol = window.location.protocol === 'file:';
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+          window.deferredPrompt = null;
+          return;
+        }
 
-          if (isFileProtocol) {
-            alert(
-              '📢 [실제 앱 설치 안내]\n\n' +
-              '현재 컴퓨터 탐색기 파일(file://)로 열려 있어, 브라우저 보안 정책상 시스템 설치 창이 차단됩니다.\n\n' +
-              '깃허브(HTTPS)에 올리시면 이 버튼을 누르자마자 [실제 앱 설치 확인창]이 즉시 실행됩니다!\n\n' +
-              '💡 지금 PC에서 바로 앱으로 만드시려면:\n브라우저 우측 상단 메뉴(···) → [앱] 또는 [저장 및 공유] → [이 사이트를 앱으로 설치]를 누르시면 바탕화면에 바로 앱이 생성됩니다.'
-            );
-          } else if (isIOS) {
-            showToast('📲 아이폰: 브라우저 하단 [공유] → [홈 화면에 추가]를 눌러주세요!');
-          } else {
-            showToast('💡 브라우저 주소창 우측 [앱 설치] 아이콘을 클릭하시면 즉시 설치됩니다!');
-          }
+        // 4. API 직접 호출이 차단된 특수 브라우저 환경 안내
+        const isFileProtocol = window.location.protocol === 'file:';
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isFileProtocol) {
+          alert(
+            '📢 [실제 앱 설치 안내]\n\n' +
+            '현재 컴퓨터 탐색기 파일(file://)로 열려 있어 브라우저 보안 정책상 시스템 설치 창이 차단됩니다.\n\n' +
+            '깃허브(https://qdg-cmd.github.io/teacher-portal/)로 접속하시면 실제 앱 설치가 가능합니다!\n\n' +
+            '💡 지금 PC에서 바로 앱으로 만드시려면:\n브라우저 우측 상단 메뉴(···) → [앱] 또는 [저장 및 공유] → [이 사이트를 앱으로 설치]를 누르시면 바탕화면에 바로 앱이 생성됩니다.'
+          );
+        } else if (isIOS) {
+          alert(
+            '📲 [아이폰/아이패드 설치 방법]\n\n' +
+            '애플(iOS) 보안 정책상 웹페이지 내 버튼으로 앱을 직접 설치하는 기능이 전면 차단되어 있습니다.\n\n' +
+            '사파리 하단 중앙의 [공유 (네모+화살표)] 버튼 → [홈 화면에 추가]를 눌러주시면 아이폰 첫 화면에 앱 아이콘이 바로 생성됩니다!'
+          );
+        } else {
+          alert(
+            '💡 [PC / 모바일 앱 설치 방법]\n\n' +
+            '브라우저 주소창 맨 오른쪽의 [모니터 모양(또는 + 모양)의 앱 설치] 아이콘을 클릭하시면 즉시 바탕화면에 설치됩니다!\n\n' +
+            '(또는 브라우저 메뉴 [···] → [앱] → [이 사이트를 앱으로 설치] 클릭)'
+          );
         }
       });
 
       window.addEventListener('appinstalled', () => {
         showToast('🎉 교무실 포털 앱 설치가 완료되었습니다!');
-        deferredPrompt = null;
+        window.deferredPrompt = null;
       });
     }
 
