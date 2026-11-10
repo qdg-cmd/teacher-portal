@@ -956,7 +956,7 @@
 
     function registerServiceWorker() {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(err => {
+        navigator.serviceWorker.register('./sw.js').then(r => r.update()).catch(err => {
           console.log('Service Worker 등록 실패 (로컬 file:// 실행 시 정상):', err);
         });
       }

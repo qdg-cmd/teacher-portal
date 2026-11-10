@@ -1,5 +1,5 @@
-// 선생님의 교무실 포털 - PWA 캐시 워커 v3
-const CACHE_NAME = 'teacher-portal-v3';
+// 선생님의 교무실 포털 - PWA 캐시 워커 v4
+const CACHE_NAME = 'teacher-portal-v4';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -28,16 +28,24 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// apps.json은 실시간 동기화를 위해 Network-First(네트워크 우선, 오프라인 시 캐시) 전략 적용
+// Network-First 전략: 최신 업데이트 실시간 반영 (오프라인일 때만 캐시 사용)
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.endsWith('apps.json')) {
+  // HTML 페이지 및 apps.json은 무조건 네트워크에서 최신 버전을 먼저 가져옵니다
+  if (
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('apps.json') ||
+    url.pathname.endsWith('index.html') ||
+    url.pathname.endsWith('/')
+  ) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          const cloned = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+          if (response && response.status === 200) {
+            const cloned = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cloned));
+          }
           return response;
         })
         .catch(() => caches.match(event.request))
@@ -45,6 +53,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // 아이콘 등 정적 리소스는 캐시 우선
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request))
   );
