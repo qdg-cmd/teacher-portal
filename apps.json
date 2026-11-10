@@ -9,7 +9,7 @@
 #
 # 📋 [복사해서 바로 쓰는 템플릿]
 # {
-#   "id": "app-custom-19",
+#   "id": "app-custom-11",
 #   "title": "새로운 웹 앱 이름",
 #   "url": "https://qdg-cmd.github.io/새앱이름/",
 #   "icon": "🪑",
@@ -40,7 +40,6 @@
     "description": "학교생활기록부 행동특성 및 종합의견, 세특 기재 작성을 지원합니다.",
     "badge": "생기부"
   },
- 
   {
     "id": "app-03",
     "title": "학사일정 & 시간표 도우미",
@@ -103,6 +102,15 @@
     "category": "기타 도구",
     "description": "여러 개의 웹 문서를 모바일 환경에서도 보여줍니다.",
     "badge": "유틸리티"
+  },
+  {
+    "id": "app-10",
+    "title": "성적 분석 도우미",
+    "url": "https://qdg-cmd.github.io/score-help/",
+    "icon": "📊",
+    "category": "업무/행정",
+    "description": "학생 성적 데이터와 지필·수행평가 결과를 다각도로 분석합니다.",
+    "badge": "성적 분석"
   }
 ]
 
